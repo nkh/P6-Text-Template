@@ -145,35 +145,40 @@ P5 Text::Template
 
 =end pod
 
-sub compile_template (Str $template, :%variables)
+sub compile_template (Str $template, :%variables, :$debug?)
 {
-%variables.kv.map( -> $k, $v 
-	{
-	given $v
+my $t =
+	%variables.kv.map( -> $k, $v 
 		{
-		when Str { "my \$$k := \%variables<$k> ;" }
-		when List { "my \@$k := \%variables<$k> ;" }
-		when Hash { "my \%$k := \%variables<$k> ;" }
-		when Range { "my \@$k := \%variables<$k> ;" }
-		when Routine { "my &$k = &\%variables<$k> ;" }
+		given $v
+			{
+			when Str { "my \$$k := \%variables<$k> ;" }
+			when List { "my \@$k := \%variables<$k> ;" }
+			when Hash { "my \%$k := \%variables<$k> ;" }
+			when Range { "my \@$k := \%variables<$k> ;" }
+			when Routine { "my &$k = &\%variables<$k> ;" }
 
-		default { "my \$$k := \%variables<$k> ;" }
-		}
-	}).join("\n")
-	~ "\nqq/{$template}/\n" ;
+			default { "my \$$k := \%variables<$k> ;" }
+			}
+		}).join("\n")
+		~ "\nqq/{$template}/\n" ;
+
+if $debug { say $t}
+
+$t
 }
 
-multi sub fill_in (Str $template, :%variables?) is export
+multi sub fill_in (Str $template, :%variables?, :$debug?) is export
 {
 use MONKEY-SEE-NO-EVAL ;
-EVAL compile_template($template, variables => %variables) ;
+EVAL compile_template($template, :%variables, :$debug) ;
 }
 
-multi sub fill_in (Str $template, :%variables?, :$catch_exceptions, :$no_warnings?) is export
+multi sub fill_in (Str $template, :%variables?, :$debug?, :$catch_exceptions, :$no_warnings?) is export
 {
 my $filled_in = '' ;
 
-try { $filled_in = fill_in $template, variables => %variables ; }
+try { $filled_in = fill_in $template, :%variables, :$debug ; }
 
 if $! 
 	{

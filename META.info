@@ -3,7 +3,7 @@
 "perl" : "6.c",
 
 "name" : "Text::Template",
-"version" : "1.0.0",
+"version" : "1.0.8",
 "authors" : ["Nadim Khemir"],
 
 "description" : "Render text template with embedded variables and Perl6 code",
